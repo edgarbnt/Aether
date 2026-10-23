@@ -1,0 +1,38 @@
+
+name: Build Aether Windows
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Install Qt
+        uses: jurplel/install-qt-action@v4
+        with:
+          version: '6.7.3'
+          host: windows
+          target: desktop
+          arch: win64_msvc2022_64
+          modules: 'qtmultimedia'
+
+      - name: Install OpenSSL
+        run: choco install openssl --yes --no-progress
+
+      - name: Configure
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+
+      - name: Compile
+        run: cmake --build build --config Release --parallel 2
+
+      - name: Upload build files
+        uses: actions/upload-artifact@v4
+        with:
+          name: aether-windows-build
+          path: build/
+          if-no-files-found: error
